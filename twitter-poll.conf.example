@@ -8,6 +8,10 @@ db_port = 5432
 db_user = twitreader
 db_pass =
 verbose = 0
-# how many tweets we will retrieve when retrieving unseen updates.
-# API maximum is 200.
+
+# How many tweets we will retrieve when retrieving unseen updates.
+# The API maximum is 200.
 max_tweets_at_once = 200
+
+# The path to where to find the libraries from twitter-tcl
+twitter-tcl_directory = /home/will/code/twitter-tcl

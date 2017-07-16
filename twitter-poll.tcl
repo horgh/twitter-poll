@@ -18,11 +18,11 @@ namespace eval ::twitter_poll {
 	variable verbose 0
 }
 
-# Setup our configuration variables.
+# Read our configuration file.
 #
 # We expect a configuration file in this location:
 #
-# ~/.config/twitter_poll.conf
+# ~/.config/twitter-poll.conf
 #
 # The contents of the config are key and values in the format:
 #
@@ -39,10 +39,12 @@ namespace eval ::twitter_poll {
 # db_port
 # db_user
 # db_pass
+# max_tweets_at_once
 # verbose
-proc ::twitter_poll::setup {} {
+# twitter-tcl_directory
+proc ::twitter_poll::_read_config {} {
 	# ~/.config/twitter_poll.conf
-	set config_file [file join $::env(HOME) .config twitter_poll.conf]
+	set config_file [file join $::env(HOME) .config twitter-poll.conf]
 
 	# TODO: Check that file exists first? So we can give a nicer error message.
 	set f [open $config_file]
@@ -66,6 +68,11 @@ proc ::twitter_poll::setup {} {
 		dict set values $key $val
 	}
 
+	return $values
+}
+
+# Use configuration settings to configure library variables.
+proc ::twitter_poll::_setup_options {values} {
 	# TODO: The below will generate an error if a config key is missing. It would
 	# be better to handle this more cleanly.
 
@@ -224,30 +231,22 @@ proc ::twitter_poll::poll {} {
 #
 # I do this in a procedure rather than globally so I can dynamically adjust the
 # auto_path.
-proc ::twitter_poll::include_libraries {} {
+proc ::twitter_poll::include_libraries {config} {
 	global auto_path
 
-	# Find the directory the script is in.
-	set script_path [info script]
-	set script_dir [file dirname $script_path]
-
-	# Libraries we want are in the parent directory.
-	if {[file pathtype $script_dir] == "absolute"} {
-		set parent [file dirname $script_dir]
-		set auto_path [linsert $auto_path 0 $parent]
-	} else {
-		set parent [file join $script_dir ".."]
-		set auto_path [linsert $auto_path 0 $parent]
-	}
+	set twittertcl_dir [dict get $config twitter-tcl_directory]
+	set auto_path [linsert $auto_path 0 $twittertcl_dir]
 
 	package require Pgtcl
 	package require twitlib
 }
 
 proc ::twitter_poll::main {} {
-	::twitter_poll::include_libraries
+	set config [::twitter_poll::_read_config]
 
-	::twitter_poll::setup
+	::twitter_poll::include_libraries $config
+
+	::twitter_poll::_setup_options $config
 
 	if {![::twitter_poll::poll]} {
 		exit 1
