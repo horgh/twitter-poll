@@ -126,7 +126,7 @@ proc ::twitter_poll::get_last_tweet_id {dbh} {
 	return $tweet_id
 }
 
-# Status is a dict with keys: id, screen_name, text.
+# Status is a dict with keys: id, screen_name, full_text.
 #
 # It represents a single tweet.
 proc ::twitter_poll::store_update {dbh status} {
@@ -138,7 +138,7 @@ proc ::twitter_poll::store_update {dbh status} {
 			(SELECT NULL FROM tweet WHERE tweet_id = $5) \
 		}
 
-	set tweet [dict get $status text]
+	set tweet [dict get $status full_text]
 
 	# We get back a result handle that can be used to get at other data. It may
 	# be used to clean up too.
